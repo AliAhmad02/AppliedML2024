@@ -1,0 +1,69 @@
+For the regression/classification problems, I used both tree based and NN based algorithms.
+For the clustering I used k-means clustering and BIRCH.
+
+1. Classification_AliAhmad_XGBoost.csv:
+Algorithm: XGBoost.
+Key HP values: n_estimators: 450, max_depth: 9.
+HP optimization: Used custom-written Optuna function.
+Variable choice: Trained on entire dataset, used SHAP to pick features.
+Train/test split: 50/50.
+Loss function: 0.073 on validation set (binary cross-entropy).
+Own evaluation: Basically perfect, auc was roughly 0.99 on validation set.
+
+2. Classification_AliAhmad_AdaBoost.csv
+Algorithm: AdaBoost.
+Key HP values: n_estimators: 100, learning_rate: 0.8.
+HP optimization: Tuned using GridSearch.
+Variable choice: Trained on entire dataset, used built-in importance ranking.
+Train/Test split: 50/50
+Loss function: 0.066 on validation set  (binary cross-entropy). 
+Own evaluation: Again, basically perfect, validation auc waas 0.99.
+
+3. Classification_AliAhmad_TensorFlowNN.csv
+Algorithm: tf.Keras
+Key HP values: learning_rate: 10^(-3.45), 4 hidden layers: 40, batchnorm, 50, 20
+HP optimization: Used Adam and a learning_rate scheduler.
+Variable choice: Same variables as we used in XGBoost.
+Train/test split: 80/20.
+Loss function: 0.201 on validation set (binary cross-entropy).
+Own evaluation: Quite good, validation auc of around 0.97. You just can't beat trees here.
+
+4. Regression_AliAhmad_LightGBM_VariableList.csv
+Algorithm: LightGBM (using verstack API, LGBMTuner).
+Key HP values: num_leaves: 234, feature_fraction: 0.27.
+HP optimization: Tuned using verstack, uses Optuna in the background.
+Variable choice: Trained on whole dataset, used SHAP to get top features.
+Pre-processing: Removed faulty energy readings from dataset (-999).
+Train/test split: 90/10.
+Loss function: 0.609 on validation set (mean absolute percentage error).
+Own evaluation: Really good, the HP optimization was done really well. It brought the loss down a lot (It was ~30 without any HP optimization).
+
+5. Regression_AliAhmad_PytorchNN.csv
+Algorithm: torch.nn.
+Key HP values: 4 hidden layers, N=256, 128, 64, 32, 16.
+HP optimization: Tuned using Adam.
+Variable choice: Same as LGBM.
+Pre-processing: Removed faulty energy readings from dataset (-999) and scaled data with QuantileTransformer.
+Train/test split: 90/10.
+Number of trainable parameters: 50433
+Loss function: 0.77824193 on validation set (mean absolute percentage error).
+Own evaluation: Quite good, the loss was also brought down a lot here, it's just damn hard to beat tree-based models.
+
+6. Clustering_AliAhmad_kNN.csv
+Algorithm: K nearest neighbors.
+Key HP values: n_clusters: 6.
+HP optimization: Used the elbow method.
+Variable choice: Sample 10 random variable names, train KNN on it, save the inertia for each. Repeat 1000 times, consider the
+top 5% of solutions (lowest inertia), histogram the data and pick the 10 most frequently appearing variables in the top 5%.
+Pre-processing: Scaled the data using RobustScaler.
+Loss function: 0.205 on the unlabeled test data (silhoutte score).
+Own evaluation: Did PCA and looked at it in 2D. Looks okay, there's definitely some visible clustering, but it's also far from perfect.
+
+7. Clustering_AliAhmad_BIRCH.csv
+Algorithm: BIRCH.
+Key HP values: threshold: 0.3.
+HP optimization: Trial and error.
+Variable choice: Same as KNN.
+Pre-processing: Scaled the data using RobustScaler.
+Loss function: 0.345 on unlabeled test data (silhoutte score).
+Own evaluation: Mostly the same conclusion as KNN from inspecting it visually, although the silhoutte score is a bit better.
